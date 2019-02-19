@@ -1,19 +1,19 @@
-import { Request, Transform } from 'graphql-tools';
+import { Request, Transform } from "graphql-tools";
 
-import { Contracts } from './types';
+import { Contracts } from "./types";
 
 export default class ContractQueryTransform implements Transform {
-  contracts: Contracts;
+  public contracts: Contracts;
 
   constructor(contracts: any) {
     this.contracts = contracts;
   }
 
-  transformRequest(originalRequest: Request) {
+  public transformRequest(originalRequest: Request) {
     return originalRequest;
   }
 
-  transformResult(result: any) {
+  public transformResult(result: any) {
     return result;
   }
 }

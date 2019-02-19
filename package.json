@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "description": "Client side EthQL wrapper",
   "main": "lib/index.js",
+  "files": [
+    "lib",
+    "README.md"
+  ],
   "repository": "https://github.com/sprusr/ethpollo",
   "author": "sprusr <scott@spru.sr>",
   "license": "MIT",
@@ -12,5 +16,16 @@
     "graphql": "^14.1.1",
     "graphql-tools": "^4.0.4",
     "web3-eth-abi": "^1.0.0-beta.46"
+  },
+  "devDependencies": {
+    "node-fetch": "^2.3.0",
+    "ts-node": "^8.0.2",
+    "tslint": "^5.12.1",
+    "typescript": "^3.3.3"
+  },
+  "scripts": {
+    "start": "$(npm bin)/ts-node example/index.ts",
+    "build": "$(npm bin)/tsc",
+    "lint": "$(npm bin)/tslint -p tsconfig.json -c tslint.json -t stylish --fix"
   }
 }
