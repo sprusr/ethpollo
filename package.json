@@ -1,0 +1,16 @@
+{
+  "name": "ethpollo",
+  "version": "0.1.0",
+  "description": "Client side EthQL wrapper",
+  "main": "lib/index.js",
+  "repository": "https://github.com/sprusr/ethpollo",
+  "author": "sprusr <scott@spru.sr>",
+  "license": "MIT",
+  "dependencies": {
+    "apollo-link-http": "^1.5.11",
+    "apollo-link-schema": "^1.1.6",
+    "graphql": "^14.1.1",
+    "graphql-tools": "^4.0.4",
+    "web3-eth-abi": "^1.0.0-beta.46"
+  }
+}
