@@ -1,7 +1,6 @@
 import { createHttpLink, HttpLink } from "apollo-link-http";
 import { SchemaLink } from "apollo-link-schema";
 import {
-  addMockFunctionsToSchema,
   introspectSchema,
   makeExecutableSchema,
   makeRemoteExecutableSchema,
@@ -32,7 +31,6 @@ const init = async ({
   const contractSchema = makeExecutableSchema({
     typeDefs: generateContractSchema(contracts),
   });
-  addMockFunctionsToSchema({ schema: contractSchema });
 
   // load ethql schema
   const ethqlSchemaDefs = await introspectSchema(link);

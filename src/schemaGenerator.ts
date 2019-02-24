@@ -12,7 +12,7 @@ const generateContractQuery = ({ contractName, abi }: Contract) => `
 type ${contractName}Query {
   ${abi.filter(({ type, constant }) => type === "function" && constant).map(({ name, inputs, outputs }) => `
     ${name}${
-      inputs.length > 0 && generateFunctionInputs(inputs)
+      inputs.length > 0 ? generateFunctionInputs(inputs) : ''
     }: ${
       outputs.length === 1 ? solidityToGqlType(outputs[0].type) : `${contractName}_${name}`
     }

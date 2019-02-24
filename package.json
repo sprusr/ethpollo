@@ -18,6 +18,11 @@
     "web3-eth-abi": "^1.0.0-beta.46"
   },
   "devDependencies": {
+    "apollo-cache-inmemory": "^1.4.3",
+    "apollo-client": "^2.4.13",
+    "apollo-link": "^1.2.8",
+    "apollo-link-error": "^1.1.7",
+    "graphql-tag": "^2.10.1",
     "node-fetch": "^2.3.0",
     "ts-node": "^8.0.2",
     "tslint": "^5.12.1",
