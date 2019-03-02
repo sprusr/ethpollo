@@ -1,37 +1,101 @@
 import { Operation, DocumentNode } from 'apollo-link';
 import { hasDirectives, getDirectiveInfoFromField } from 'apollo-utilities';
 import { Kind, visit, FieldNode } from 'graphql';
+import nanoid from 'nanoid/generate';
 
 import { CONTRACT_DIRECTIVE } from '../constants';
+import { QueryInfo } from '../types';
 
+/**
+ * For the given operation, determine whether its query contains the
+ * `@contract` directive.
+ * @param operation Operation containing the query to test
+ */
 export const isContractOperation = ({ query }: Operation) =>
   hasDirectives([CONTRACT_DIRECTIVE], query);
 
+/**
+ * Determine whether the specific given FieldNode contains the given directive
+ * on the top level.
+ * @param node FieldNode to test
+ * @param directive Directive to test for
+ */
 export const fieldHasDirective = (node: FieldNode, directive: string) =>
   Object.keys(getDirectiveInfoFromField(node, {}) || {}).some(dir => dir === directive);
 
+/**
+ * Return an object containing an array of nodes with `@contract` directives
+ * from the provided document, and the original document with said nodes
+ * removed.
+ * @param document DocumentNode to separate
+ */
 export const separateContractDirectives = (document: DocumentNode) => {
   const contract: FieldNode[] = [];
+  const fieldPath: string[] = [];
   const query: DocumentNode = visit(document, {
-    [Kind.FIELD]: node => {
-      if (fieldHasDirective(node, CONTRACT_DIRECTIVE)) {
-        contract.push(node);
-        return null;
-      }
+    [Kind.FIELD]: {
+      enter: node => {
+        fieldPath.push(node.name.value);
+        console.log(fieldPath)
+
+        // must have @contract directive and be top level of query
+        if (fieldHasDirective(node, CONTRACT_DIRECTIVE)) {
+          contract.push(node);
+          return null;
+        }
+      },
+      leave: () => {
+        fieldPath.pop();
+      },
     },
   });
   return { contract, query };
 }
 
-export const getArgsFromContractCallNode = (node: FieldNode) => {
-  if (!node.arguments || !node.arguments.length) return [];
-  const argsNode = node.arguments.find(({ name: { value: name }, value }) =>
-    name === 'args' && value.kind === Kind.LIST && !!value.values.length);
-  if (!argsNode || argsNode.value.kind !== Kind.LIST) return [];
-  // TODO: should work for all kinds
-  return argsNode.value.values.map(valueNode => valueNode.kind === Kind.INT ? valueNode.value : null);
+/**
+ * Return a GraphQL directive AST used to track a contract call
+ * @param id The nanoid generated id to use
+ */
+export const makeTrackerDirective = (id: string) => ({
+  kind: Kind.DIRECTIVE,
+  name: {
+    kind: Kind.NAME,
+    value: 'ethpollo',
+  },
+  arguments: [{
+    kind: Kind.ARGUMENT,
+    name: {
+      kind: Kind.NAME,
+      value: 'id',
+    },
+    value: {
+      kind: Kind.STRING,
+      value: id,
+    }
+  }]
+});
+
+export const getTrackerId = (field: FieldNode, args?: Object) => {
+  const directives = getDirectiveInfoFromField(field, args || {});
+  if (!(directives.ethpollo && directives.ethpollo.id))
+    throw new Error('Tracker directive not found');
+  return directives.ethpollo.id;
 }
 
+/**
+ * Return a GraphQL query AST for the following, with provided alias, data and
+ * to address:
+```graphql
+{
+  $alias: call(data: $data, to: $address) {
+    data
+  }
+}
+```
+ * @param alias Alias for the call query
+ * @param data Data to be sent with the call
+ * @param address Address of the contract to call
+ */
 export const makeCallTree = (alias: string, data: string, address: string): FieldNode => ({
   kind: Kind.FIELD,
   name: {

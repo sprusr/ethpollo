@@ -3,13 +3,15 @@ import { AbiItem } from 'web3-utils/types';
 import { AbiCoder } from 'web3-eth-abi';
 import { OperationDefinitionNode } from 'graphql';
 
-import { isContractOperation, separateContractDirectives, extractCallQueries } from './utils';
+import { isContractOperation, separateContractDirectives, extractCallQueries, extractCallResults } from './utils';
+import { QueryInfo } from './types';
 
 class Ethpollo extends ApolloLink {
   abi: AbiItem[];
   abiCoder: AbiCoder;
   address: string;
   contractName: string;
+  queryInfo: QueryInfo;
 
   constructor(contractName: string, address: string, abi: AbiItem[]) {
     super();
@@ -17,6 +19,7 @@ class Ethpollo extends ApolloLink {
     this.abiCoder = new AbiCoder();
     this.address = address;
     this.contractName = contractName;
+    this.queryInfo = {};
   }
 
   request(operation: Operation, forward: NextLink) {
@@ -26,13 +29,8 @@ class Ethpollo extends ApolloLink {
     // if the result of the transform is falsy, we want to skip over
     if (!transformedOperation) return forward(operation);
 
-    // return observable which handles response
-    const observer = forward(transformedOperation);
-    observer.subscribe({
-      next: result => this.transformResult(result, operation),
-      error: this.handleError,
-    });
-    return observer;
+    // forward the request and map the response
+    return forward(transformedOperation).map(result => this.transformResult(result, operation));
   }
 
   transformRequest(operation: Operation) {
@@ -40,21 +38,24 @@ class Ethpollo extends ApolloLink {
     if (!isContractOperation(operation)) return;
 
     // extract relevant directives from operation
-    const { contract, query } = separateContractDirectives(operation.query);
+    const { contract: contractFields, query } = separateContractDirectives(operation.query);
 
     // filter out queries for our contract
-    const relevantQueries = contract.filter(({ name: { value: name } }) => name === this.contractName);
+    const relevantContractFields = contractFields.filter(({ name: { value: name } }) => name === this.contractName);
 
     // if there's nothing for our contract, do nothing
-    if (!relevantQueries.length) return;
+    if (!relevantContractFields.length) return;
 
     // convert contract queries to calls
-    const callQueries = extractCallQueries({
-      nodes: relevantQueries,
+    const { callQueries, queryInfo } = extractCallQueries({
       abi: this.abi,
       abiCoder: this.abiCoder,
-      address: this.address
+      address: this.address,
+      nodes: relevantContractFields,
     });
+
+    // update the queries we're keeping track of
+    this.queryInfo = { ...this.queryInfo, ...queryInfo };
 
     // set queries on main query to be sent
     // TODO: find a neater way to do this
@@ -62,7 +63,7 @@ class Ethpollo extends ApolloLink {
       [...(query.definitions[0] as OperationDefinitionNode).selectionSet.selections, ...callQueries];
 
     // for debugging
-    console.log(JSON.stringify(contract));
+    console.log(JSON.stringify(contractFields));
     console.log(JSON.stringify(query));
 
     // set the new query on the operation
@@ -71,11 +72,12 @@ class Ethpollo extends ApolloLink {
   }
 
   transformResult(result: FetchResult, operation: Operation) {
-    return result;
-  }
-
-  handleError(error: any) {
-    throw new Error(error);
+    const dataWithCalls = extractCallResults(result.data, this.queryInfo);
+    console.log(result, dataWithCalls);
+    return {
+      ...result,
+      data: dataWithCalls,
+    };
   }
 }
 

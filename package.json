@@ -13,8 +13,12 @@
   "license": "MIT",
   "dependencies": {
     "@types/graphql": "^14.0.7",
+    "@types/lodash": "^4.14.121",
+    "@types/nanoid": "^1.2.1",
     "apollo-utilities": "^1.2.1",
     "graphql": "^14.1.1",
+    "lodash": "^4.17.11",
+    "nanoid": "^2.0.1",
     "web3-eth-abi": "^1.0.0-beta.46",
     "web3-eth-contract": "^1.0.0-beta.46"
   },
