@@ -1,9 +1,13 @@
 {
-    "defaultSeverity": "error",
-    "extends": [
-        "tslint:recommended"
-    ],
-    "jsRules": {},
-    "rules": {},
-    "rulesDirectory": []
+  "defaultSeverity": "error",
+  "extends": [
+    "tslint:latest"
+  ],
+  "jsRules": {},
+  "rules": {
+    "max-line-length": [true, 120],
+    "quotemark": [true, "single", "avoid-template"],
+    "no-submodule-imports": [true, "nanoid/generate"]
+  },
+  "rulesDirectory": []
 }

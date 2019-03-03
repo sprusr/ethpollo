@@ -1,20 +1,20 @@
-export type QueryInfoItemField = {
+export interface IQueryInfoItemField {
   // name of the result field
-  name: string,
+  name: string;
   // name to use in the response
-  alias?: string,
+  alias?: string;
 }
 
 // TODO: replace `path` in favour of `contract` and `alias`
-export type QueryInfoItem = {
+export interface IQueryInfoItem {
   // path in the original query
-  path: string[],
+  path: string[];
   // name of the function/event
-  name: string,
+  name: string;
   // requested result fields
-  includedFields: QueryInfoItemField[],
-};
+  includedFields: IQueryInfoItemField[];
+}
 
-export type QueryInfo = {
-  [id: string]: QueryInfoItem,
-};
+export interface IQueryInfo {
+  [id: string]: IQueryInfoItem;
+}

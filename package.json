@@ -15,18 +15,19 @@
     "@types/graphql": "^14.0.7",
     "@types/lodash": "^4.14.121",
     "@types/nanoid": "^1.2.1",
+    "apollo-link": "^1.2.8",
     "apollo-utilities": "^1.2.1",
     "graphql": "^14.1.1",
     "lodash": "^4.17.11",
     "nanoid": "^2.0.1",
     "web3-eth-abi": "^1.0.0-beta.46",
-    "web3-eth-contract": "^1.0.0-beta.46"
+    "web3-eth-contract": "^1.0.0-beta.46",
+    "web3-utils": "^1.0.0-beta.47"
   },
   "devDependencies": {
     "@types/jest": "^24.0.9",
     "apollo-cache-inmemory": "^1.4.3",
     "apollo-client": "^2.4.13",
-    "apollo-link": "^1.2.8",
     "apollo-link-http": "^1.5.11",
     "graphql-tag": "^2.10.1",
     "jest": "^24.1.0",
@@ -38,6 +39,6 @@
   "scripts": {
     "test": "jest",
     "build": "tsc",
-    "lint": "tslint -c tslint.json 'src/**/*.ts'"
+    "lint": "tslint -c tslint.json -p tsconfig.json 'src/**/*.ts'"
   }
 }

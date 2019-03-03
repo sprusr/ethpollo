@@ -1,10 +1,8 @@
-import { Operation, DocumentNode } from 'apollo-link';
-import { hasDirectives, getDirectiveInfoFromField } from 'apollo-utilities';
-import { Kind, visit, FieldNode } from 'graphql';
-import nanoid from 'nanoid/generate';
+import { DocumentNode, Operation } from 'apollo-link';
+import { getDirectiveInfoFromField, hasDirectives } from 'apollo-utilities';
+import { FieldNode, Kind, visit } from 'graphql';
 
 import { CONTRACT_DIRECTIVE } from '../constants';
-import { QueryInfo } from '../types';
 
 /**
  * For the given operation, determine whether its query contains the
@@ -21,7 +19,7 @@ export const isContractOperation = ({ query }: Operation) =>
  * @param directive Directive to test for
  */
 export const fieldHasDirective = (node: FieldNode, directive: string) =>
-  Object.keys(getDirectiveInfoFromField(node, {}) || {}).some(dir => dir === directive);
+  Object.keys(getDirectiveInfoFromField(node, {}) || {}).some((dir) => dir === directive);
 
 /**
  * Return an object containing an array of nodes with `@contract` directives
@@ -34,9 +32,8 @@ export const separateContractDirectives = (document: DocumentNode) => {
   const fieldPath: string[] = [];
   const query: DocumentNode = visit(document, {
     [Kind.FIELD]: {
-      enter: node => {
+      enter: (node) => {
         fieldPath.push(node.name.value);
-        console.log(fieldPath)
 
         // must have @contract directive and be top level of query
         if (fieldHasDirective(node, CONTRACT_DIRECTIVE)) {
@@ -50,18 +47,13 @@ export const separateContractDirectives = (document: DocumentNode) => {
     },
   });
   return { contract, query };
-}
+};
 
 /**
  * Return a GraphQL directive AST used to track a contract call
  * @param id The nanoid generated id to use
  */
 export const makeTrackerDirective = (id: string) => ({
-  kind: Kind.DIRECTIVE,
-  name: {
-    kind: Kind.NAME,
-    value: 'ethpollo',
-  },
   arguments: [{
     kind: Kind.ARGUMENT,
     name: {
@@ -71,37 +63,38 @@ export const makeTrackerDirective = (id: string) => ({
     value: {
       kind: Kind.STRING,
       value: id,
-    }
-  }]
+    },
+  }],
+  kind: Kind.DIRECTIVE,
+  name: {
+    kind: Kind.NAME,
+    value: 'ethpollo',
+  },
 });
 
-export const getTrackerId = (field: FieldNode, args?: Object) => {
+export const getTrackerId = (field: FieldNode, args?: object) => {
   const directives = getDirectiveInfoFromField(field, args || {});
-  if (!(directives.ethpollo && directives.ethpollo.id))
+  if (!(directives.ethpollo && directives.ethpollo.id)) {
     throw new Error('Tracker directive not found');
+  }
   return directives.ethpollo.id;
-}
+};
 
 /**
  * Return a GraphQL query AST for the following, with provided alias, data and
  * to address:
-```graphql
-{
-  $alias: call(data: $data, to: $address) {
-    data
-  }
-}
-```
+ * ```graphql
+ * {
+ *   $alias: call(data: $data, to: $address) {
+ *     data
+ *   }
+ * }
+ * ```
  * @param alias Alias for the call query
  * @param data Data to be sent with the call
  * @param address Address of the contract to call
  */
 export const makeCallTree = (alias: string, data: string, address: string): FieldNode => ({
-  kind: Kind.FIELD,
-  name: {
-    kind: Kind.NAME,
-    value: 'call',
-  },
   alias: {
     kind: Kind.NAME,
     value: alias,
@@ -114,31 +107,36 @@ export const makeCallTree = (alias: string, data: string, address: string): Fiel
         value: 'data',
       },
       value: {
-        kind: Kind.OBJECT,
         fields: [{
           kind: Kind.OBJECT_FIELD,
           name: {
             kind: Kind.NAME,
-            value: 'to'
+            value: 'to',
           },
           value: {
             kind: Kind.STRING,
             value: address,
-          }
+          },
         }, {
           kind: Kind.OBJECT_FIELD,
           name: {
             kind: Kind.NAME,
-            value: 'data'
+            value: 'data',
           },
           value: {
             kind: Kind.STRING,
-            value: data
-          }
+            value: data,
+          },
         }],
+        kind: Kind.OBJECT,
       },
     },
   ],
+  kind: Kind.FIELD,
+  name: {
+    kind: Kind.NAME,
+    value: 'call',
+  },
   selectionSet: {
     kind: Kind.SELECTION_SET,
     selections: [
@@ -147,9 +145,8 @@ export const makeCallTree = (alias: string, data: string, address: string): Fiel
         name: {
           kind: Kind.NAME,
           value: 'data',
-        }
-      }
-    ]
-  }
+        },
+      },
+    ],
+  },
 });
-

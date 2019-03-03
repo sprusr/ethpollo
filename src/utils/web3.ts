@@ -1,4 +1,4 @@
-import { AbiItem } from 'web3-utils/types';
+import { AbiItem } from 'web3-utils';
 
 /**
  * Convert from an object of named contract function arguments to a positional
@@ -12,13 +12,14 @@ export const positionalArgsFromObject = (
 ) => {
   if (!(inputs && inputs.length)) {
     if (Object.keys(objectArgs).length) {
+      // tslint:disable-next-line:no-console
       console.warn('Arguments provided for method with no inputs');
     }
     return [];
   }
-  return inputs.map(input => {
+  return inputs.map((input) => {
     const objectArg = objectArgs[input.name];
-    if (!objectArg) throw new Error('Required input not provided');
+    if (!objectArg) { throw new Error('Required input not provided'); }
     return objectArg;
   });
-}
+};
