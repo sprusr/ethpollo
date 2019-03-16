@@ -4,6 +4,8 @@
 
 # RPC is dead, long live GraphQL!
 
+<a href="https://badge.fury.io/js/ethpollo"><img src="https://badge.fury.io/js/ethpollo.svg" alt="npm version" height="18"></a>
+
 Interact with Ethereum contracts using GraphQL. Please note: this is **very new**, and **probably broken**.
 
 ## Why does this exist?

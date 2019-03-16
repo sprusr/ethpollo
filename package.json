@@ -11,6 +11,7 @@
   "repository": "https://github.com/sprusr/ethpollo",
   "author": "sprusr <scott@spru.sr>",
   "license": "MIT",
+  "keywords": ["ethereum", "web3", "apollo-link"],
   "dependencies": {
     "@types/graphql": "^14.0.7",
     "@types/lodash": "^4.14.121",
