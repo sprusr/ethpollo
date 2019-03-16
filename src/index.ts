@@ -1,10 +1,12 @@
 import { ApolloLink, FetchResult, NextLink, Operation } from 'apollo-link';
 import { OperationDefinitionNode } from 'graphql';
+import { set } from 'lodash';
 import { AbiCoder } from 'web3-eth-abi';
 import { AbiItem } from 'web3-utils';
 
+import { MUTATION_TYPE, QUERY_TYPE } from './constants';
 import { IQueryInfo } from './types';
-import { extractCallQueries, extractCallResults, isContractOperation, separateContractDirectives } from './utils';
+import { extractCallQueries, isContractOperation, separateContractDirectives } from './utils';
 
 class Ethpollo extends ApolloLink {
   public abi: AbiItem[];
@@ -62,25 +64,52 @@ class Ethpollo extends ApolloLink {
     (query.definitions[0] as OperationDefinitionNode).selectionSet.selections =
       [...(query.definitions[0] as OperationDefinitionNode).selectionSet.selections, ...callQueries];
 
-    // for debugging
-    // tslint:disable-next-line:no-console
-    console.log(JSON.stringify(contractFields));
-    // tslint:disable-next-line:no-console
-    console.log(JSON.stringify(query));
-
     // set the new query on the operation
     operation.query = query;
     return operation;
   }
 
   public transformResult(result: FetchResult, operation: Operation) {
-    const dataWithCalls = extractCallResults(result.data, this.queryInfo);
-    // tslint:disable-next-line:no-console
-    console.log(result, dataWithCalls);
+    if (!result.data) { return result; }
+
+    const decoded = Object.entries(result.data).reduce((acc, [id, { data }]: [string, any]) => {
+      const info = this.queryInfo[id] || {};
+      switch (info.type) {
+        case QUERY_TYPE:
+          return {...acc, ...this.extractCallResult(id, data)};
+
+        case MUTATION_TYPE:
+          return {...acc, ...this.extractMutationResult(id, data)};
+
+        default:
+          return acc;
+      }
+    }, {});
     return {
       ...result,
-      data: dataWithCalls,
+      data: {...result.data, ...decoded},
     };
+  }
+
+  private extractCallResult(id: string, data: string) {
+    const info = this.queryInfo[id];
+    const abiEntry = this.abi.find((entry) => entry.name === info.name);
+    if (!abiEntry) {
+      // tslint:disable-next-line:no-console
+      console.warn(`Could not decode call for function ${info.name}`);
+      return {};
+    }
+    const decoded = this.abiCoder.decodeParameters(abiEntry.outputs || [], data);
+    const typenameInfo = {
+      [info.path[0]]: { __typename: null },
+    };
+    return set(typenameInfo, info.path, decoded);
+  }
+
+  private extractMutationResult(id: string, data: string) {
+    // tslint:disable-next-line:no-console
+    console.info('Mutation decoding coming soon');
+    return {};
   }
 }
 

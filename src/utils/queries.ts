@@ -1,11 +1,11 @@
 import { argumentsObjectFromField } from 'apollo-utilities';
 import { FieldNode, Kind } from 'graphql';
-import { set } from 'lodash';
 import nanoid from 'nanoid/generate';
 import { AbiCoder } from 'web3-eth-abi';
 import { AbiItem } from 'web3-utils';
 
-import { IQueryInfo, IQueryInfoItem } from '../types';
+import { QUERY_TYPE } from '../constants';
+import { IQueryInfo } from '../types';
 import { makeCallTree } from './ast';
 import { positionalArgsFromObject } from './web3';
 
@@ -51,6 +51,7 @@ export const extractCallQueries = ({
         includedFields: [], // TODO: implement - do we need it, or does apollo auto filter?
         name: functionName,
         path: [contractAlias, functionAlias],
+        type: QUERY_TYPE,
       };
 
       // convert contract queries to calls
@@ -84,36 +85,3 @@ export const createCallQuery = ({
   const data = abiCoder.encodeFunctionCall(abiItem, argsArray);
   return makeCallTree(trackerId, data, address);
 };
-
-export const extractCallResults = (data: { [key: string]: any } | undefined, queryInfo: IQueryInfo) => {
-  if (!data) { return data; }
-
-  return Object.keys(data)
-    .filter((key) => !!queryInfo[key])
-    .reduce((results, key) => {
-      const info = queryInfo[key];
-
-      // get this call result and check there was data returned
-      const result = results[key];
-      if (!result.data) {
-        // tslint:disable-next-line:no-console
-        console.warn('No data returned from call');
-        return result;
-      }
-
-      // parse data and set at original path
-      const parsedResult = parseCallResult(result.data, info);
-      set(results, info.path, parsedResult);
-
-      // set __typename (is this allowed?)
-      results[info.path[0]].__typename = '';
-
-      // remove raw result
-      delete results[key];
-
-      // return new value
-      return results;
-    }, { ...data });
-};
-
-export const parseCallResult = (data: string, info: IQueryInfoItem) => ({});

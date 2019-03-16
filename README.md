@@ -4,7 +4,7 @@
 
 # RPC is dead, long live GraphQL!
 
-Interact with Ethereum contracts using GraphQL. Please note: this is very new, and probably broken.
+Interact with Ethereum contracts using GraphQL. Please note: this is **very new**, and **probably broken**.
 
 ## Why does this exist?
 
@@ -28,7 +28,7 @@ The request will get turned into something like:
 }
 ```
 
-But then the response will be converted back to:
+And then the response will be converted back to:
 
 ```graphql
 {
@@ -78,7 +78,7 @@ const query = gql`{
 client.query({ query }).then(console.log)
 ```
 
-More docs coming soon to [ethpollo.dev](https://ethpollo.dev).
+More docs and an interactive example coming soon to [ethpollo.dev](https://ethpollo.dev).
 
 ## Future plans
 
