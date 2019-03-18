@@ -1,6 +1,6 @@
 import { MUTATION_TYPE, QUERY_TYPE } from './constants';
 
-export interface IQueryInfoItemField {
+export interface INodeInfoItemField {
   // name of the result field
   name: string;
   // name to use in the response
@@ -10,7 +10,7 @@ export interface IQueryInfoItemField {
 export type RequestType = typeof QUERY_TYPE | typeof MUTATION_TYPE;
 
 // TODO: replace `path` in favour of `contract` and `alias`
-export interface IQueryInfoItem {
+export interface INodeInfoItem {
   // query or mutation
   type: RequestType;
   // path in the original query
@@ -18,9 +18,9 @@ export interface IQueryInfoItem {
   // name of the function/event
   name: string;
   // requested result fields
-  includedFields: IQueryInfoItemField[];
+  includedFields: INodeInfoItemField[];
 }
 
-export interface IQueryInfo {
-  [id: string]: IQueryInfoItem;
+export interface INodeInfo {
+  [id: string]: INodeInfoItem;
 }

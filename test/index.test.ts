@@ -78,5 +78,5 @@ test('runs', async () => {
   }`;
 
   const result = await client.query({ query });
-  console.log(result);
+  console.log(JSON.stringify(result));
 });
